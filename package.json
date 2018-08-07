@@ -1,6 +1,6 @@
 {
   "name": "heimdalljs",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Structured instrumentation library",
   "main": "dist/heimdalljs.cjs.js",
   "jsnext:main": "dist/heimdalljs.es.js",
@@ -11,7 +11,8 @@
     "build:test": "rollup --no-strict -c test.config.js",
     "test": "npm run build:node && npm run build:test && mocha dist/tests/bundle.cjs",
     "test:debug": "mocha --no-timeouts debug dist/tests/bundle.cjs",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",

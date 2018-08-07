@@ -1,5 +1,9 @@
 # master
 
+# 0.2.6
+
+* time is calced for each of tokens from start till stop, instead of between tokens, using session, as previously
+
 # 0.2.5
 
 * don't include RSVP within node bundle

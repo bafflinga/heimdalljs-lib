@@ -1,13 +1,31 @@
+import timeNS from './time';
+
 export default class Cookie {
   constructor(node, heimdall) {
     this._node = node;
     this._restoreNode = node.parent;
     this._heimdall = heimdall;
     this._stopped = false;
+    this.previousTimeNS = 0;
+
+    this._recordTime();
   }
 
   get stats() {
     return this._node.stats.own;
+  }
+
+  _recordTime() {
+    let time = timeNS();
+
+    // always true except for root
+    if (this._heimdall.current) {
+      let delta = time - this.previousTimeNS;
+      if (delta < time) {
+        this._heimdall.current.stats.time.self += delta;
+      }
+    }
+    this.previousTimeNS = time;
   }
 
   stop() {
@@ -22,7 +40,7 @@ export default class Cookie {
     }
 
     this._stopped = true;
-    this._heimdall._recordTime();
+    this._recordTime();
     this._heimdall._session.current = this._restoreNode;
   }
 

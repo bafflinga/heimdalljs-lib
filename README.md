@@ -284,3 +284,150 @@ heimdall.node('broccoli', function () {
   }],
 }
 ```
+
+### New time calcings (0.2.6)
+```js
+const
+  heimdalljs = require('heimdalljs'),
+  stats = ['first', 'second', 'third'];
+
+let tokens = [];
+
+function startCounting() {
+  return new Promise((res,rej) => {
+    function innerStarter() {
+      let token;
+      if (tokens.length < stats.length) {
+        token = heimdalljs.start(stats[tokens.length]);
+        tokens.push( token );
+        // tokens are with empty timings here (as i expect)
+        console.log(`created "${token._node.id.name}" (${JSON.stringify(token._node.stats)})`);
+        setImmediate(innerStarter);
+      } else {
+        console.log('all counters started');
+        res();
+      }
+    }
+    innerStarter();
+  });
+}
+
+function stopCounting() {
+  return new Promise((res,rej) => {
+    function innerStopper() {
+      const token = tokens.pop();
+      if (token) {
+        console.log(`stopping "${token._node.id.name}" (${JSON.stringify(token._node.stats)})...`);
+        token.stop();
+        console.log(`stopped "${token._node.id.name}": (${JSON.stringify(token._node.stats)})`);
+
+        setImmediate(innerStopper);
+      } else {
+        console.log('all counters stopped');
+        res();
+      }
+    }
+
+    innerStopper();
+  });
+}
+
+function main() {
+  startCounting()
+  .then(stopCounting)
+  .then(() => {
+    console.log(`started and stopped..`);
+    console.log(JSON.stringify(heimdalljs.toJSON(), null, 2));
+  }).catch(err => {
+    console.error(`failure`, err);
+  })
+  .then(() => {
+    console.log('finished fuss.');
+  });
+}
+
+if (!module.parent) {
+  main();
+}
+```
+stdout:
+```
+created "first" ({"own":{},"time":{"self":0}})
+created "second" ({"own":{},"time":{"self":0}})
+created "third" ({"own":{},"time":{"self":0}})
+all counters started
+stopping "third" ({"own":{},"time":{"self":0}})...
+stopped "third": ({"own":{},"time":{"self":991808}})
+stopping "second" ({"own":{},"time":{"self":0}})...
+stopped "second": ({"own":{},"time":{"self":1858408}})
+stopping "first" ({"own":{},"time":{"self":0}})...
+stopped "first": ({"own":{},"time":{"self":10207077}})
+all counters stopped
+started and stopped..
+```
+
+heimdall json on finish:
+```json
+{
+  "nodes": [
+    {
+      "_id": 0,
+      "id": {
+        "name": "heimdall"
+      },
+      "stats": {
+        "own": {},
+        "time": {
+          "self": 0
+        }
+      },
+      "children": [
+        1
+      ]
+    },
+    {
+      "_id": 1,
+      "id": {
+        "name": "first"
+      },
+      "stats": {
+        "own": {},
+        "time": {
+          "self": 10207077
+        }
+      },
+      "children": [
+        2
+      ]
+    },
+    {
+      "_id": 2,
+      "id": {
+        "name": "second"
+      },
+      "stats": {
+        "own": {},
+        "time": {
+          "self": 1858408
+        }
+      },
+      "children": [
+        3
+      ]
+    },
+    {
+      "_id": 3,
+      "id": {
+        "name": "third"
+      },
+      "stats": {
+        "own": {},
+        "time": {
+          "self": 991808
+        }
+      },
+      "children": []
+    }
+  ]
+}
+```
